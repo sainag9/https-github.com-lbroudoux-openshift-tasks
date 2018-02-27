@@ -33,25 +33,25 @@
 	    echo "New Tag: ${newTag}"
 	
 	    // Copy the war file we just built and rename to ROOT.war
-	    sh "cp ./target/tasks-ui.war ./ROOT.war"
+	    sh "cp ./target/openshift-tasks.war ./ROOT.war"
 	
 	    // Start Binary Build in OpenShift using the file we just published
-	    // Replace cloudapps-dev1 with the name of your dev project
-	    sh "oc project cloudapps-dev1"
-	    sh "oc start-build tasks --follow --from-file=./ROOT.war -n cloudapps-dev1"
+	    // Replace xyz-tasks-dev2 with the name of your dev project
+	    sh "oc project xyz-tasks-dev2"
+	    sh "oc start-build tasks --follow --from-file=./ROOT.war -n xyz-tasks-dev2"
 	
-	    openshiftTag alias: 'false', destStream: 'tasks', destTag: newTag, destinationNamespace: 'cloudapps-dev1', namespace: 'cloudapps-dev1', srcStream: 'tasks', srcTag: 'latest', verbose: 'false'
+	    openshiftTag alias: 'false', destStream: 'tasks', destTag: newTag, destinationNamespace: 'xyz-tasks-dev2', namespace: 'xyz-tasks-dev2', srcStream: 'tasks', srcTag: 'latest', verbose: 'false'
 	  }
 	
 	  stage('Deploy to Dev') {
 	    // Patch the DeploymentConfig so that it points to the latest TestingCandidate-${version} Image.
-	    // Replace cloudapps-dev1 with the name of your dev project
-	    sh "oc project cloudapps-dev1"
-	    sh "oc patch dc tasks --patch '{\"spec\": { \"triggers\": [ { \"type\": \"ImageChange\", \"imageChangeParams\": { \"containerNames\": [ \"tasks\" ], \"from\": { \"kind\": \"ImageStreamTag\", \"namespace\": \"cloudapps-dev1\", \"name\": \"tasks:TestingCandidate-$version\"}}}]}}' -n cloudapps-dev1"
+	    // Replace xyz-tasks-dev2 with the name of your dev project
+	    sh "oc project xyz-tasks-dev2"
+	    sh "oc patch dc tasks --patch '{\"spec\": { \"triggers\": [ { \"type\": \"ImageChange\", \"imageChangeParams\": { \"containerNames\": [ \"tasks\" ], \"from\": { \"kind\": \"ImageStreamTag\", \"namespace\": \"xyz-tasks-dev2\", \"name\": \"tasks:TestingCandidate-$version\"}}}]}}' -n xyz-tasks-dev2"
 	
-	    openshiftDeploy depCfg: 'tasks', namespace: 'cloudapps-dev1', verbose: 'false', waitTime: '', waitUnit: 'sec'
-	    openshiftVerifyDeployment depCfg: 'tasks', namespace: 'cloudapps-dev1', replicaCount: '1', verbose: 'false', verifyReplicaCount: 'false', waitTime: '', waitUnit: 'sec'
-	    openshiftVerifyService namespace: 'cloudapps-dev1', svcName: 'tasks', verbose: 'false'
+	    openshiftDeploy depCfg: 'tasks', namespace: 'xyz-tasks-dev2', verbose: 'false', waitTime: '', waitUnit: 'sec'
+	    openshiftVerifyDeployment depCfg: 'tasks', namespace: 'xyz-tasks-dev2', replicaCount: '1', verbose: 'false', verifyReplicaCount: 'false', waitTime: '', waitUnit: 'sec'
+	    openshiftVerifyService namespace: 'xyz-tasks-dev2', svcName: 'tasks', verbose: 'false'
 	  }
 	
 	  
