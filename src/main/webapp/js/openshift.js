@@ -3,23 +3,25 @@ var mainApp = angular.module("mainApp", []);
 mainApp.controller('controller', function($scope,$http) {
 
 	$scope.submitForm=function(){
-		
-    	if($scope.github){
-   
+   if($scope.deproll == 'roll'){
+	   var blob_file = $scope.rollback;
+   } else {
+	   var blob_file = $scope.jenkinsfilePreview + $scope.finalJenkins;
+   }
+   if(blob_file){
     		var a = document.createElement("a");
             document.body.appendChild(a);
             a.style = "display: none";
-                var blob = new Blob([$scope.jenkinsfilePreview + $scope.finalJenkins], {type: 'application/octet-stream'}),
+                var blob = new Blob([blob_file], {type: 'application/octet-stream'}),
                     url1 = window.URL.createObjectURL(blob);
                 a.href = url1;
                 a.download = 'Jenkinsfile';
                 a.click();
                 window.URL.revokeObjectURL(url1);
-    	}
+   }
     	
-
-		
-            var blob1 = new Blob([$scope.yamlfile], {type: 'octet-stream'});
+if($scope.yamlfiles){
+	var blob1 = new Blob([$scope.yamlfile], {type: 'octet-stream'});
             var blob2 = new Blob([$scope.sonarqubeyaml], {type: 'octet-stream'});
 			var blob3 = new Blob([$scope.sonarqubepostgresql], {type: 'octet-stream'});
 			
@@ -32,12 +34,19 @@ mainApp.controller('controller', function($scope,$http) {
     // see FileSaver.js
     saveAs(content, "yamlfiles.zip");
 });
+}
+		
+            
 
         
     }
     $scope.preview = function(){
     	$scope.warningflag = false;
     	if($scope.github && $scope.oproject && $scope.gproject){
+			var email_id = 'def notifySuccessful() {\n  emailext (\n      subject: \"SUCCESSFUL: Job \'${env.JOB_NAME} [${env.BUILD_NUMBER}]\'\",\n      body: \"\"\"<p>SUCCESSFUL: Job \'${env.JOB_NAME} [${env.BUILD_NUMBER}]\':<\/p>\n        <p>Check console output at \"<a href=\"${env.BUILD_URL}\">${env.JOB_NAME} [${env.BUILD_NUMBER}]<\/a>\"<\/p>\"\"\",\n      recipientProviders: [[$class: \'RequesterRecipientProvider\']],to:\'mail_id\'\n    )\n}';
+			if($scope.emailadd){
+			$scope.mail_id = email_id.replace(/mail_id/g,$scope.emailadd);
+			}
 			document.getElementById("jpreview").style.color = "black";
 			var str = 'apiVersion: v1\nkind: Template\nlabels:\n  template: openshift_application_name\nmetadata:\n  name: openshift_application_name\nobjects:\n- apiVersion: v1\n  kind: BuildConfig\n  metadata:\n    annotations:\n      pipeline.alpha.openshift.io\/uses: \'[{\"name\": \"openshift_application_name\", \"namespace\": \"\", \"kind\": \"DeploymentConfig\"}]\'\n    labels:\n      application: ${APPLICATION_NAME}\n    name: ${APPLICATION_NAME}\n  spec:\n    source:\n      git:\n        ref: ${SOURCE_REF}\n        uri: ${SOURCE_URL}\n      type: Git\n    strategy:\n      jenkinsPipelineStrategy:\n        jenkinsfilePath: Jenkinsfile\n      type: JenkinsPipeline\n      type: Generic\n    triggers:\n    - github:\n        secret: github_secret\n      type: GitHub\n    - generic:\n        secret: github_secret\n      type: Generic\nparameters:\n- description: The name for the application.\n  name: APPLICATION_NAME\n  required: true\n  value: openshift_application_name\n- description: The name of Dev project\n  name: DEV_PROJECT\n  required: true\n  value: openshift_project_name\n- description: Git source URI for application\n  name: SOURCE_URL\n  required: true\n  value: github_project_name\n- description: Git branch\/tag reference\n  name: SOURCE_REF\n  value: master';
     		$scope.modalHeader = "Jenkinsfile Preview";
@@ -59,10 +68,10 @@ mainApp.controller('controller', function($scope,$http) {
 			if($scope.unittesting){
 				$scope.jenkinsfilePreview = $scope.jenkinsfilePreview + '\n' + '\t' + '\xa0\xa0' + $scope.unittests;
 			}
-			if($scope.sonar){
+			if($scope.sonarflag){
 			$scope.jenkinsfilePreview = $scope.jenkinsfilePreview + '\n' + '\t' + '\xa0\xa0' + $scope.sonarqube;
 			}
-			if($scope.jira){
+			if($scope.jiraflag){
 			$scope.jenkinsfilePreview = $scope.jenkinsfilePreview + '\n' + '\t' + '\xa0\xa0' + $scope.jira;
 			}
     		if($scope.dev || $scope.prod){
@@ -80,7 +89,15 @@ mainApp.controller('controller', function($scope,$http) {
     			
 				}
     		}
-    	} else {
+    	} else if($scope.deproll == "roll"){
+			var rb = 'node {\n    stage(\'rollback\') {\n\tsh \'oc project dep_project\'\n        sh \'oc rollback dep_config --to-version=version_number\'\n    }\n}';
+			var rb1 = rb.replace(/dep_project/g,$scope.Dprojectname);
+			var rb2 = rb1.replace(/dep_config/g,$scope.Dconfigname);
+			$scope.rollback = rb2.replace(/version_number/g,$scope.Dversion);
+			$scope.modalHeader = "Rollback Preview";
+			$scope.rollbackflag = true;
+			$scope.jenkinsfilePreview = $scope.rollback;
+		} else {
     		$scope.modalHeader = "Warning Message";
     		$scope.warningflag = true;
     		$scope.jenkinsfilePreview = "please select all mandatory fields";
