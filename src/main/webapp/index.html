@@ -25,25 +25,55 @@
   <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
   <h3>Developed By:<br><b>Automate4<sup>&reg;</sup></b></h3>
   </div>
+  
 			<div class="col-md-6">
+			<form>
+    <label class="radio-inline">
+      <input type="radio" name="optradio" ng-model="deproll" value="dep" ng-click="submitForm()">Deployment
+    </label>
+    <label class="radio-inline">
+      <input type="radio" name="optradio" ng-model="deproll" value="roll">Rollback
+    </label>
+  </form><br>
 				<form ng-submit="submitForm()">
+				<div ng-show="deproll=='roll'">
+					<div class="input-group">
+				    <span class="input-group-addon"><i class="fas fa-folder"></i></span>
+				    <input id="email" type="text" class="form-control" name="url" placeholder="Deployment project name" ng-model="Dprojectname" ng-required="deproll=='roll'">
+				  </div><br>
+				  <div class="input-group">
+				    <span class="input-group-addon"><i class="fas fa-folder"></i></span>
+				    <input id="oproject" type="text" class="form-control" name="openshiftproject" placeholder="Deployment config name" ng-model="Dconfigname" ng-required="deproll=='roll'">
+				  </div><br>
+				  <div class="input-group">
+				    <span class="input-group-addon"><i class="fab fa-folder"></i></span>
+				    <input id="gproject" type="number" class="form-control" name="gitproject" placeholder="Deployment version" ng-model="Dversion" ng-required="deproll=='roll'">
+				  </div><br>
+				</div>
+					<div ng-show="deproll=='dep'">
 				  <div class="input-group">
 				    <span class="input-group-addon"><i class="fab fa-github"></i></span>
-				    <input id="email" type="url" class="form-control" name="url" placeholder="GitHub url" ng-model="github" required>
+				    <input id="email" type="url" class="form-control" name="url" placeholder="GitHub url" ng-model="github" ng-required="deproll=='dep'">
 				  </div><br>
 				  <div class="input-group">
 				    <span class="input-group-addon"><i class="fas fa-folder"></i></span>
-				    <input id="oproject" type="text" class="form-control" name="openshiftproject" placeholder="Openshift Project name" ng-model="oproject" required>
+				    <input id="oproject" type="text" class="form-control" name="openshiftproject" placeholder="Openshift Project name" ng-model="oproject" ng-required="deproll=='dep'">
 				  </div><br>
 				  <div class="input-group">
 				    <span class="input-group-addon"><i class="fas fa-folder"></i></span>
-				    <input id="gproject" type="text" class="form-control" name="gitproject" placeholder="project name" ng-model="gproject" required>
+				    <input id="gproject" type="text" class="form-control" name="gitproject" placeholder="project name" ng-model="gproject" ng-required="deproll=='dep'">
 				  </div><br>
 				  <div class="input-group">
 				    <span class="input-group-addon"><i class="fas fa-user-secret"></i></i></span>
-				    <input id="gsecret" type="text" class="form-control" name="gitproject" placeholder="GitHub Secret" ng-model="gsecret" required>
-				  </div>
+				    <input id="gsecret" type="text" class="form-control" name="gitproject" placeholder="GitHub Secret" ng-model="gsecret" ng-required="deproll=='dep'">
+				  </div><br>
+				  <div class="input-group">
+				    <span class="input-group-addon"><i class="fas fa-envelope"></i></i></span>
+				    <input id="gsecret" type="email" class="form-control" name="emailadd" placeholder="Email Address(for notification)" ng-model="emailadd" >
+				  </div></div>
 				  <br>
+				  
+					<div ng-show="deproll=='dep'">
 				  <h4>Select testing stages</h4>
 				    <div class="checkbox">
 				      <label><input type="checkbox" value="" ng-model="unittesting" >JUnit</label>
@@ -54,13 +84,16 @@
 				  <br>
 				  <h4>Select the addons</h4>
 				    <div class="checkbox">
-				      <label><input type="checkbox" value="" ng-model="sonar">sonar</label>
+				      <label><input type="checkbox" value="" ng-model="sonarflag">sonar</label>
 				    </div>
 				    <div class="checkbox">
-				      <label><input type="checkbox" value="" ng-model="nexus" disabled>nexus</label>
+				      <label><input type="checkbox" value="" ng-model="nexusflag" disabled>nexus</label>
 				    </div>
 					<div class="checkbox">
-				      <label><input type="checkbox" value="" ng-model="jira">jira</label>
+				      <label><input type="checkbox" value="" ng-model="jiraflag">jira</label>
+				    </div>
+					<div class="checkbox">
+				      <label><input type="checkbox" value="" ng-model="yamlfiles">download yamlfiles</label>
 				    </div>
 				  
 				  <br>
@@ -74,9 +107,10 @@
 				    <div class="checkbox">
 				      <label><input type="checkbox" value="" ng-model="prod">prod</label>
 				    </div>
+					</div>
   <br>
   <!-- Trigger the modal with a button -->
-  <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal" ng-click="preview()">Submit</button>
+  <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal" ng-click="preview()" ng-show="deproll=='dep' || deproll=='roll'">Submit</button>
 
   <!-- Modal -->
   <div class="modal fade" id="myModal" role="dialog">
@@ -84,7 +118,8 @@
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4 class="modal-title" ng-model="modalHeader" id="mHeader" style="text-align: center;">{{modalHeader}}<span ng-show="warningflag"><i class="fas fa-exclamation-triangle"></i></span></h4>
+          <h4 class="modal-title" ng-model="modalHeader" id="mHeader" style="text-align: center;">{{modalHeader}}<span ng-show="warningflag"><i class="fas fa-exclamation-triangle"></i></span>
+		  <span ng-show="rollbackflag"><i class="fas fa-undo"></i></span></h4>
         </div>
         <div class="modal-body" ng-model="jenkinsfilePreview">
           <p id="jpreview" style="text-align: center;">{{jenkinsfilePreview}}</p>
