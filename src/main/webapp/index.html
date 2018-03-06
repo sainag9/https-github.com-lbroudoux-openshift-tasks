@@ -83,19 +83,50 @@
 				    </div>
 				  <br>
 				  <h4>Select the addons</h4>
+				  <div class="row">
+				  <div class="col-md-6">
 				    <div class="checkbox">
-				      <label><input type="checkbox" value="" ng-model="sonarflag">sonar</label>
+				      <label><input type="checkbox" value="" ng-model="sonarflag">sonar
+					  </label>
 				    </div>
+					</div>
+					<div class="col-md-6"><span><input type="number" class="form-control" placeholder="sonar order" ng-model="sonarorder"
+					min="1" max="3"></span>
+					</div>
+					</div>
+					<div class="row">
+				  <div class="col-md-6">
 				    <div class="checkbox">
 				      <label><input type="checkbox" value="" ng-model="nexusflag" disabled>nexus</label>
+					  </div>
 				    </div>
+					<div class="col-md-6"><span><input type="number" class="form-control" placeholder="nexus order" ng-model="nexusorder"
+					min="1" max="3" disabled></span>
+					</div>
+					</div>
+					<div class="row">
+				  <div class="col-md-6">
 					<div class="checkbox">
 				      <label><input type="checkbox" value="" ng-model="jiraflag">jira</label>
+					  </div>
 				    </div>
+					<div class="col-md-6"><span><input type="number" class="form-control" placeholder="jira order" ng-model="jiraorder"
+					min="1" max="3"></span>
+					</div>
+					</div>
 					<div class="checkbox">
 				      <label><input type="checkbox" value="" ng-model="yamlfiles">download yamlfiles</label>
 				    </div>
-				  
+					<div class="row">
+				  <div class="col-md-6">
+				  <div class="form-group">
+    <label for="exampleFormControlTextarea1">additional scripts</label>
+    <textarea class="form-control rounded-0" id="exampleFormControlTextarea1" rows="10" ng-model="textareascript"></textarea>
+</div></div>
+<div class="col-md-6"><br><br><span><input type="number" class="form-control" placeholder="script order" ng-model="scriptorder"
+min="1" max="3"></span>
+</div>
+					</div>
 				  <br>
 				  <h4>Select the environments to deploy</h4>
 				    <div class="checkbox">
