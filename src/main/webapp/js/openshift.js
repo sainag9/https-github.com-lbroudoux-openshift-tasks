@@ -76,6 +76,9 @@ if($scope.yamlfiles){
 			if($scope.jiraflag){
 			$scope.jenkinsfilePreview = $scope.jenkinsfilePreview + '\n' + $scope.jira;
 			}
+			if($scope.textareascript){
+				$scope.jenkinsfilePreview = $scope.jenkinsfilePreview + '\n' + $scope.textareascript;
+			}
     		if($scope.dev || $scope.prod){
     			$scope.jenkinsfilePreview = $scope.jenkinsfilePreview +  '\n' + $scope.buildimage;
 				if($scope.dev){
