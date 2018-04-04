@@ -36,22 +36,22 @@
 	    sh "cp ./target/tasks-ui.war ./ROOT.war"
 	
 	    // Start Binary Build in OpenShift using the file we just published
-	    // Replace auto-tasks-dev with the name of your dev project
-	    sh "oc project auto-tasks-dev"
-	    sh "oc start-build tasks --follow --from-file=./ROOT.war -n auto-tasks-dev"
+	    // Replace xyz-tasks-dev with the name of your dev project
+	    sh "oc project xyz-tasks-dev"
+	    sh "oc start-build tasks --follow --from-file=./ROOT.war -n xyz-tasks-dev"
 	
-	    openshiftTag alias: 'false', destStream: 'tasks', destTag: newTag, destinationNamespace: 'auto-tasks-dev', namespace: 'auto-tasks-dev', srcStream: 'tasks', srcTag: 'latest', verbose: 'false'
+	    openshiftTag alias: 'false', destStream: 'tasks', destTag: newTag, destinationNamespace: 'xyz-tasks-dev', namespace: 'xyz-tasks-dev', srcStream: 'tasks', srcTag: 'latest', verbose: 'false'
 	  }
 	
 	  stage('Deploy to Dev') {
 	    // Patch the DeploymentConfig so that it points to the latest TestingCandidate-${version} Image.
-	    // Replace auto-tasks-dev with the name of your dev project
-	    sh "oc project auto-tasks-dev"
-	    sh "oc patch dc tasks --patch '{\"spec\": { \"triggers\": [ { \"type\": \"ImageChange\", \"imageChangeParams\": { \"containerNames\": [ \"tasks\" ], \"from\": { \"kind\": \"ImageStreamTag\", \"namespace\": \"auto-tasks-dev\", \"name\": \"tasks:TestingCandidate-$version\"}}}]}}' -n auto-tasks-dev"
+	    // Replace xyz-tasks-dev with the name of your dev project
+	    sh "oc project xyz-tasks-dev"
+	    sh "oc patch dc tasks --patch '{\"spec\": { \"triggers\": [ { \"type\": \"ImageChange\", \"imageChangeParams\": { \"containerNames\": [ \"tasks\" ], \"from\": { \"kind\": \"ImageStreamTag\", \"namespace\": \"xyz-tasks-dev\", \"name\": \"tasks:TestingCandidate-$version\"}}}]}}' -n xyz-tasks-dev"
 	
-	    openshiftDeploy depCfg: 'tasks', namespace: 'auto-tasks-dev', verbose: 'false', waitTime: '', waitUnit: 'sec'
-	    openshiftVerifyDeployment depCfg: 'tasks', namespace: 'auto-tasks-dev', replicaCount: '1', verbose: 'false', verifyReplicaCount: 'false', waitTime: '', waitUnit: 'sec'
-	    openshiftVerifyService namespace: 'auto-tasks-dev', svcName: 'tasks', verbose: 'false'
+	    openshiftDeploy depCfg: 'tasks', namespace: 'xyz-tasks-dev', verbose: 'false', waitTime: '', waitUnit: 'sec'
+	    openshiftVerifyDeployment depCfg: 'tasks', namespace: 'xyz-tasks-dev', replicaCount: '1', verbose: 'false', verifyReplicaCount: 'false', waitTime: '', waitUnit: 'sec'
+	    openshiftVerifyService namespace: 'xyz-tasks-dev', svcName: 'tasks', verbose: 'false'
 	  }
 	
 	  
