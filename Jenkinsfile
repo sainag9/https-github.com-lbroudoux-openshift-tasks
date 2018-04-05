@@ -25,15 +25,16 @@
 	
 	    sh "${mvnCmd} clean package -DskipTests"
 	  }
-	 
-
-	
-	  stage('Build OpenShift Image') {
+stage('Unit Tests') {
+	    echo "Unit Tests"
+	    sh "${mvnCmd} test"
+	  }
+stage('Build OpenShift Image') {
 	    def newTag = "TestingCandidate-${version}"
 	    echo "New Tag: ${newTag}"
 	
 	    // Copy the war file we just built and rename to ROOT.war
-	    sh "cp ./target/tasks-ui.war ./ROOT.war"
+	    sh "cp ./target/openshift-tasks.war ./ROOT.war"
 	
 	    // Start Binary Build in OpenShift using the file we just published
 	    // Replace xyz-tasks-dev with the name of your dev project
@@ -42,8 +43,7 @@
 	
 	    openshiftTag alias: 'false', destStream: 'tasks', destTag: newTag, destinationNamespace: 'xyz-tasks-dev', namespace: 'xyz-tasks-dev', srcStream: 'tasks', srcTag: 'latest', verbose: 'false'
 	  }
-	
-	  stage('Deploy to Dev') {
+stage('Deploy to Dev') {
 	    // Patch the DeploymentConfig so that it points to the latest TestingCandidate-${version} Image.
 	    // Replace xyz-tasks-dev with the name of your dev project
 	    sh "oc project xyz-tasks-dev"
@@ -52,10 +52,7 @@
 	    openshiftDeploy depCfg: 'tasks', namespace: 'xyz-tasks-dev', verbose: 'false', waitTime: '', waitUnit: 'sec'
 	    openshiftVerifyDeployment depCfg: 'tasks', namespace: 'xyz-tasks-dev', replicaCount: '1', verbose: 'false', verifyReplicaCount: 'false', waitTime: '', waitUnit: 'sec'
 	    //openshiftVerifyService namespace: 'xyz-tasks-dev', svcName: 'tasks', verbose: 'false'
-	  }
-	
-	  
-	}
+	  }}
 	
 	// Convenience Functions to read variables from the pom.xml
 	def getVersionFromPom(pom) {
