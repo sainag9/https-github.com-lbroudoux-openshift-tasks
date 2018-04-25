@@ -48,7 +48,7 @@ mainApp
 							window.URL.revokeObjectURL(url1);
 						}
 
-						/*if ($scope.yamlfiles) {
+						
 							var blob1 = new Blob([ $scope.yamlfile ], {
 								type : 'octet-stream'
 							});
@@ -59,6 +59,7 @@ mainApp
 									[ $scope.sonarqubepostgresql ], {
 										type : 'octet-stream'
 									});
+
 							var zip = new JSZip();
 							zip.file("yamlfile.yaml", blob1);
 							zip.file("sonarqube.yaml", blob2);
@@ -69,7 +70,7 @@ mainApp
 								// see FileSaver.js
 								saveAs(content, "yamlfiles.zip");
 							});
-						}*/
+						
 
 					}
 					$scope.preview = function() {
@@ -100,18 +101,14 @@ mainApp
 									$scope.gsecret);
 							$scope.defaultJenkins = '\/\/ Run this node on a Maven Slave edit\n\t\/\/ Maven Slaves have JDK and Maven already installed\n\tnode(\'maven\') {\n\t  \/\/ Make sure your nexus_openshift_settings.xml\n\t  \/\/ Is pointing to your nexus instance\n\t  def mvnCmd = \"mvn\"\n\t\n\t  stage(\'Checkout Source\') {\n\t    \/\/ Get Source Code from SCM (Git) as configured in the Jenkins Project\n\t    \/\/ Next line for inline script, \"checkout scm\" for Jenkinsfile from Gogs\n\t    \/\/git \'http:\/\/gogs.xyz-gogs.svc.cluster.local:3000\/CICDLabs\/openshift-tasks.git\'\n\t    checkout scm\n\t  }\n\t\t\t\n  \n\t  \/\/ The following variables need to be defined at the top level and not inside\n\t  \/\/ the scope of a stage - otherwise they would not be accessible from other stages.\n\t  \/\/ Extract version and other properties from the pom.xml\n\t  def groupId    = getGroupIdFromPom(\"pom.xml\")\n\t  def artifactId = getArtifactIdFromPom(\"pom.xml\")\n\t  def version    = getVersionFromPom(\"pom.xml\")\n\t\n\t  stage(\'Build war\') {\n\t    echo \"Building version ${version}\"\n\t\n\t    sh \"${mvnCmd} clean package -DskipTests\"\n\t  }';
 							$scope.unittests = 'stage(\'Unit Tests\') {\n\t    echo \"Unit Tests\"\n\t    sh \"${mvnCmd} test\"\n\t  }';
-							$scope.sonarqube = 'stage(\'Code Analysis\') {\n            echo \"Code Analysis\"\n\n          \/\/ Replace xyz-sonarqube with the name of your project\n           sh \"${mvnCmd} org.sonarsource.scanner.maven:sonar-maven-plugin:3.4.0.905:sonar -Dsonar.host.url=http:\/\/sonarqube-xyz-jenkins.apps.rhocp.com\/ -Dsonar.projectName=${JOB_BASE_NAME}\"\n\t\t   }';
+							$scope.sonarqube = 'stage(\'Code Analysis\') {\n            echo \"Code Analysis\"\n\n          \/\/ Replace xyz-sonarqube with the name of your project\n           sh \"${mvnCmd} org.sonarsource.scanner.maven:sonar-maven-plugin:3.4.0.905:sonar -Dsonar.host.url=http:\/\/sonarqube-xyz-jenkins.apps.rhosp.com\/ -Dsonar.projectName=${JOB_BASE_NAME}\"\n\t\t   }';
 							$scope.jira = 'node {\n  stage(\'JIRA\') {\n    \/\/ Look at IssueInput class for more information.\n  jiraComment body: \'test case executed successfully\', issueKey: \'10000\'\n \n  }\n}';
-							$scope.buildimage = 'stage(\'Build OpenShift Image\') {\n\t    def newTag = \"TestingCandidate-${version}\"\n\t    echo \"New Tag: ${newTag}\"\n\t\n\t    \/\/ Copy the war file we just built and rename to ROOT.war\n\t    sh \"cp .\/target\/openshift-tasks.war .\/ROOT.war\"\n\t\n\t    \/\/ Start Binary Build in OpenShift using the file we just published\n\t    \/\/ Replace xyz-tasks-dev2 with the name of your dev project\n\t    sh \"oc project xyz-tasks-dev2\"\n\t    sh \"oc start-build tasks --follow --from-file=.\/ROOT.war -n xyz-tasks-dev2\"\n\t\n\t    openshiftTag alias: \'false\', destStream: \'tasks\', destTag: newTag, destinationNamespace: \'xyz-tasks-dev2\', namespace: \'xyz-tasks-dev2\', srcStream: \'tasks\', srcTag: \'latest\', verbose: \'false\'\n\t  }';
-							$scope.devJenkins = 'stage(\'Deploy to Dev\') {\n\t    \/\/ Patch the DeploymentConfig so that it points to the latest TestingCandidate-${version} Image.\n\t    \/\/ Replace xyz-tasks-dev2 with the name of your dev project\n\t    sh \"oc project xyz-tasks-dev2\"\n\t    sh \"oc patch dc tasks --patch \'{\\\"spec\\\": { \\\"triggers\\\": [ { \\\"type\\\": \\\"ImageChange\\\", \\\"imageChangeParams\\\": { \\\"containerNames\\\": [ \\\"tasks\\\" ], \\\"from\\\": { \\\"kind\\\": \\\"ImageStreamTag\\\", \\\"namespace\\\": \\\"xyz-tasks-dev2\\\", \\\"name\\\": \\\"tasks:TestingCandidate-$version\\\"}}}]}}\' -n xyz-tasks-dev2\"\n\t\n\t    openshiftDeploy depCfg: \'tasks\', namespace: \'xyz-tasks-dev2\', verbose: \'false\', waitTime: \'\', waitUnit: \'sec\'\n\t    openshiftVerifyDeployment depCfg: \'tasks\', namespace: \'xyz-tasks-dev2\', replicaCount: \'1\', verbose: \'false\', verifyReplicaCount: \'false\', waitTime: \'\', waitUnit: \'sec\'\n\t    openshiftVerifyService namespace: \'xyz-tasks-dev2\', svcName: \'tasks\', verbose: \'false\'\n\t  }';
-							$scope.integrationtests = 'stage(\'Integration Test\') {\n\t    \/\/ TBD: Proper test\n\t    \/\/ Could use the OpenShift-Tasks REST APIs to make sure it is working as expected.\n\t\n\t    def newTag = \"ProdReady-${version}\"\n\t    echo \"New Tag: ${newTag}\"\n\t\n\t    \/\/ Replace xyz-tasks-dev2 with the name of your dev project\n\t    openshiftTag alias: \'false\', destStream: \'tasks\', destTag: newTag, destinationNamespace: \'xyz-tasks-dev2\', namespace: \'xyz-tasks-dev2\', srcStream: \'tasks\', srcTag: \'latest\', verbose: \'false\'\n\t  }';
-							$scope.prodJenkins = '\/\/ Blue\/Green Deployment into Production\n\t  \/\/ -------------------------------------\n\t  def dest   = \"tasks-green\"\n\t  def active = \"\"\n\t\n\t  stage(\'Prep Production Deployment\') {\n\t    \/\/ Replace xyz-tasks-dev2 and xyz-tasks-prod with\n\t    \/\/ your project names\n\t    sh \"oc project xyz-tasks-prod\"\n\t    sh \"oc get route tasks -n xyz-tasks-prod -o jsonpath=\'{ .spec.to.name }\' > activesvc.txt\"\n\t    active = readFile(\'activesvc.txt\').trim()\n\t    if (active == \"tasks-green\") {\n\t      dest = \"tasks-blue\"\n\t    }\n\t    echo \"Active svc: \" + active\n\t    echo \"Dest svc:   \" + dest\n\t  }\n\t  stage(\'Deploy new Version\') {\n\t    echo \"Deploying to ${dest}\"\n\t\n\t    \/\/ Patch the DeploymentConfig so that it points to\n\t    \/\/ the latest ProdReady-${version} Image.\n\t    \/\/ Replace xyz-tasks-dev2 and xyz-tasks-prod with\n\t    \/\/ your project names.\n\t    sh \"oc patch dc ${dest} --patch \'{\\\"spec\\\": { \\\"triggers\\\": [ { \\\"type\\\": \\\"ImageChange\\\", \\\"imageChangeParams\\\": { \\\"containerNames\\\": [ \\\"$dest\\\" ], \\\"from\\\": { \\\"kind\\\": \\\"ImageStreamTag\\\", \\\"namespace\\\": \\\"xyz-tasks-dev2\\\", \\\"name\\\": \\\"tasks:ProdReady-$version\\\"}}}]}}\' -n xyz-tasks-prod\"\n\t\n\t    openshiftDeploy depCfg: dest, namespace: \'xyz-tasks-prod\', verbose: \'false\', waitTime: \'\', waitUnit: \'sec\'\n\t    openshiftVerifyDeployment depCfg: dest, namespace: \'xyz-tasks-prod\', replicaCount: \'1\', verbose: \'false\', verifyReplicaCount: \'true\', waitTime: \'\', waitUnit: \'sec\'\n\t    openshiftVerifyService namespace: \'xyz-tasks-prod\', svcName: dest, verbose: \'false\'\n\t  }\n\t  stage(\'Switch over to new Version\') {\n\t    input \"Switch Production?\"\n\t\n\t    \/\/ Replace xyz-tasks-prod with the name of your\n\t    \/\/ production project\n\t    sh \'oc patch route tasks -n xyz-tasks-prod -p \\\'{\"spec\":{\"to\":{\"name\":\"\' + dest + \'\"}}}\\\'\'\n\t    sh \'oc get route tasks -n xyz-tasks-prod > oc_out.txt\'\n\t    oc_out = readFile(\'oc_out.txt\')\n\t    echo \"Current route configuration: \" + oc_out\n\t  }';
+							$scope.buildimage = 'stage(\'Build OpenShift Image\') {\n\t    def newTag = \"TestingCandidate-${version}\"\n\t    echo \"New Tag: ${newTag}\"\n\t\n\t    \/\/ Copy the war file we just built and rename to ROOT.war\n\t    sh \"cp .\/target\/openshift-tasks.war .\/ROOT.war\"\n\t\n\t    \/\/ Start Binary Build in OpenShift using the file we just published\n\t    \/\/ Replace xyz-tasks-dev1 with the name of your dev project\n\t    sh \"oc project xyz-tasks-dev1\"\n\t    sh \"oc start-build tasks --follow --from-file=.\/ROOT.war -n xyz-tasks-dev1\"\n\t\n\t    openshiftTag alias: \'false\', destStream: \'tasks\', destTag: newTag, destinationNamespace: \'xyz-tasks-dev1\', namespace: \'xyz-tasks-dev1\', srcStream: \'tasks\', srcTag: \'latest\', verbose: \'false\'\n\t  }';
+							$scope.devJenkins = 'stage(\'Deploy to Dev\') {\n\t    \/\/ Patch the DeploymentConfig so that it points to the latest TestingCandidate-${version} Image.\n\t    \/\/ Replace xyz-tasks-dev1 with the name of your dev project\n\t    sh \"oc project xyz-tasks-dev1\"\n\t    sh \"oc patch dc tasks --patch \'{\\\"spec\\\": { \\\"triggers\\\": [ { \\\"type\\\": \\\"ImageChange\\\", \\\"imageChangeParams\\\": { \\\"containerNames\\\": [ \\\"tasks\\\" ], \\\"from\\\": { \\\"kind\\\": \\\"ImageStreamTag\\\", \\\"namespace\\\": \\\"xyz-tasks-dev1\\\", \\\"name\\\": \\\"tasks:TestingCandidate-$version\\\"}}}]}}\' -n xyz-tasks-dev1\"\n\t\n\t    openshiftDeploy depCfg: \'tasks\', namespace: \'xyz-tasks-dev1\', verbose: \'false\', waitTime: \'\', waitUnit: \'sec\'\n\t    openshiftVerifyDeployment depCfg: \'tasks\', namespace: \'xyz-tasks-dev1\', replicaCount: \'1\', verbose: \'false\', verifyReplicaCount: \'false\', waitTime: \'\', waitUnit: \'sec\'\n\t    \/\/openshiftVerifyService namespace: \'xyz-tasks-dev1\', svcName: \'tasks\', verbose: \'false\'\n\t  }';
+							$scope.integrationtests = 'stage(\'Integration Test\') {\n\t    \/\/ TBD: Proper test\n\t    \/\/ Could use the OpenShift-Tasks REST APIs to make sure it is working as expected.\n\t\n\t    def newTag = \"ProdReady-${version}\"\n\t    echo \"New Tag: ${newTag}\"\n\t\n\t    \/\/ Replace xyz-tasks-dev1 with the name of your dev project\n\t    openshiftTag alias: \'false\', destStream: \'tasks\', destTag: newTag, destinationNamespace: \'xyz-tasks-dev1\', namespace: \'xyz-tasks-dev1\', srcStream: \'tasks\', srcTag: \'latest\', verbose: \'false\'\n\t  }';
+							$scope.prodJenkins = '\/\/ Blue\/Green Deployment into Production\n\t  \/\/ -------------------------------------\n\t  def dest   = \"tasks-green\"\n\t  def active = \"\"\n\t\n\t  stage(\'Prep Production Deployment\') {\n\t    \/\/ Replace xyz-tasks-dev1 and xyz-tasks-prod1 with\n\t    \/\/ your project names\n\t    sh \"oc project xyz-tasks-prod1\"\n\t    sh \"oc get route tasks -n xyz-tasks-prod1 -o jsonpath=\'{ .spec.to.name }\' > activesvc.txt\"\n\t    active = readFile(\'activesvc.txt\').trim()\n\t    if (active == \"tasks-green\") {\n\t      dest = \"tasks-blue\"\n\t    }\n\t    echo \"Active svc: \" + active\n\t    echo \"Dest svc:   \" + dest\n\t  }\n\t  stage(\'Deploy new Version\') {\n\t    echo \"Deploying to ${dest}\"\n\t\n\t    \/\/ Patch the DeploymentConfig so that it points to\n\t    \/\/ the latest ProdReady-${version} Image.\n\t    \/\/ Replace xyz-tasks-dev1 and xyz-tasks-prod1 with\n\t    \/\/ your project names.\n\t    sh \"oc patch dc ${dest} --patch \'{\\\"spec\\\": { \\\"triggers\\\": [ { \\\"type\\\": \\\"ImageChange\\\", \\\"imageChangeParams\\\": { \\\"containerNames\\\": [ \\\"$dest\\\" ], \\\"from\\\": { \\\"kind\\\": \\\"ImageStreamTag\\\", \\\"namespace\\\": \\\"xyz-tasks-dev1\\\", \\\"name\\\": \\\"tasks:ProdReady-$version\\\"}}}]}}\' -n xyz-tasks-prod1\"\n\t\n\t    openshiftDeploy depCfg: dest, namespace: \'xyz-tasks-prod1\', verbose: \'false\', waitTime: \'\', waitUnit: \'sec\'\n\t    openshiftVerifyDeployment depCfg: dest, namespace: \'xyz-tasks-prod1\', replicaCount: \'1\', verbose: \'false\', verifyReplicaCount: \'true\', waitTime: \'\', waitUnit: \'sec\'\n\t    \/\/openshiftVerifyService namespace: \'xyz-tasks-prod1\', svcName: dest, verbose: \'false\'\n\t  }\n\t  stage(\'Switch over to new Version\') {\n\t    input \"Switch Production?\"\n\t\n\t    \/\/ Replace xyz-tasks-prod1 with the name of your\n\t    \/\/ production project\n\t    sh \'oc patch route tasks -n xyz-tasks-prod1 -p \\\'{\"spec\":{\"to\":{\"name\":\"\' + dest + \'\"}}}\\\'\'\n\t    sh \'oc get route tasks -n xyz-tasks-prod1 > oc_out.txt\'\n\t    oc_out = readFile(\'oc_out.txt\')\n\t    echo \"Current route configuration: \" + oc_out\n\t  }';
 							$scope.finalJenkins = '}\n\t\n\t\/\/ Convenience Functions to read variables from the pom.xml\n\tdef getVersionFromPom(pom) {\n\t  def matcher = readFile(pom) =~ \'<version>(.+)<\/version>\'\n\t  matcher ? matcher[0][1] : null\n\t}\n\tdef getGroupIdFromPom(pom) {\n\t  def matcher = readFile(pom) =~ \'<groupId>(.+)<\/groupId>\'\n\t  matcher ? matcher[0][1] : null\n\t}\n\tdef getArtifactIdFromPom(pom) {\n\t  def matcher = readFile(pom) =~ \'<artifactId>(.+)<\/artifactId>\'\n\t  matcher ? matcher[0][1] : null\n}';
 							$scope.jenkinsfilePreview = $scope.defaultJenkins;
-							if ($scope.unittesting) {
-								$scope.jenkinsfilePreview = $scope.jenkinsfilePreview
-										+ '\n' + $scope.unittests;
-							}
 							var jsobj = {
 								jira : $scope.jira,
 								sonar : $scope.sonarqube,
@@ -120,8 +117,8 @@ mainApp
 								dev : $scope.devJenkins,
 								prod : $scope.prodJenkins, 
 								Additional_Scripts : $scope.textareascript,
+								buildimage : $scope.buildimage,
 							}
-							alert($scope.textareascript);
 							$
 									.each(
 											optionTexts,
@@ -129,10 +126,6 @@ mainApp
 												$scope.jenkinsfilePreview = $scope.jenkinsfilePreview
 														+ '\n' + jsobj[value];
 											});
-							if ($scope.textareascript) {
-								$scope.jenkinsfilePreview = $scope.jenkinsfilePreview
-										+ '\n' + $scope.textareascript;
-							}
 							if ($scope.emailadd) {
 								$scope.notify_successful = 'def notifySuccessful() {\n  emailext (\n      subject: \"SUCCESSFUL: Job \'${env.JOB_NAME} [${env.BUILD_NUMBER}]\'\",\n      body: \"\"\"<p>SUCCESSFUL: Job \'${env.JOB_NAME} [${env.BUILD_NUMBER}]\':<\/p>\n        <p>Check console output at \"<a href=\"${env.BUILD_URL}\">${env.JOB_NAME} [${env.BUILD_NUMBER}]<\/a>\"<\/p>\"\"\",\n      recipientProviders: [[$class: \'RequesterRecipientProvider\']],to:\'replace_email\'\n    )\n}';
 								var maill = $scope.notify_successful.replace(
