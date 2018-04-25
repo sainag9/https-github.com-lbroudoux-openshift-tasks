@@ -31,10 +31,12 @@
 	margin: 0;
 	padding: 5px 0 0 0;
 	float: left;
-	margin-right: 10px;
+	margin-right: 5px;
 	margin-bottom : 30px;
 }
+
 #sortable1 li, #sortable2 li {
+border: 1px solid #262626;
 	margin: 0 5px 5px 5px;
 	border-radius: 25px;
 	padding: 5px;
@@ -42,10 +44,13 @@
 	width: 200px;
 	margin-bottom : 15px;
 }
+input::-webkit-input-placeholder {
+color: black !important;
+}
 </style>
 
 </head>
-<body>
+<body style="background-color: #75a3a3;">
 	<div ng-app="mainApp" ng-controller="controller">
 		<nav class="navbar navbar-inverse">
 			<div class="container-fluid">
@@ -59,10 +64,16 @@
 				</ul>
 			</div>
 		</nav>
-		<div class="row" ng-show="!rollbackflag && !deployflag">
+		<!--<div class="row" ng-show="!rollbackflag && !deployflag">
 			<div class="col-md-6 col-md-offset-4">
 			<img ng-src="images/jenkins_logo.png" height="256" width="185">
 			<img ng-src="images/OpenShift-Logo.png" height="256" width="185">
+			</div>
+		</div>-->
+		<div class="row" ng-show="!rollbackflag && !deployflag"><br><br><br><br><br>
+			<div class="col-md-6 col-md-offset-4">
+			<img ng-src="images/telstra_logo.png">
+			<img ng-src="images/unconference.jpg">
 			</div>
 		</div>
 		<div class="container">
@@ -143,9 +154,10 @@
     </thead></table>
 							<ul id="sortable1" class="connectedSortable" style="cursor: move;">
 								<li style="background-color: #66e0ff; text-align: center;">junit</li>
+								<li style="background-color: #66e0ff; text-align: center;">buildimage</li>
 								<li style="background-color: #66e0ff; text-align: center;">Integration_Testing</li>
 								<li style="background-color: #66e0ff; text-align: center;">jira</li>
-								<li style="background-color: #66e0ff; text-align: center;" class="ui-state-disabled">nexus</li>
+								<li style="background-color: #66e0ff; text-align: center;">nexus</li>
 								<li style="background-color: #66e0ff; text-align: center;">sonar</li>
 								<li style="background-color: #66e0ff; text-align: center;">Additional_Scripts</li>
 								<li style="background-color: #66e0ff; text-align: center;">dev</li>
