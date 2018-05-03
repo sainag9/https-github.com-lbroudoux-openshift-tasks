@@ -1,8 +1,8 @@
-// Run this node on a Maven Slave edits
+// Run this node on a Maven Slave edit
 	// Maven Slaves have JDK and Maven already installed
 	node('maven') {
 	  // Make sure your nexus_openshift_settings.xml
-	  // Is pointing to your nexus instances
+	  // Is pointing to your nexus instance
 	  def mvnCmd = "mvn"
 	
 	  stage('Checkout Source') {
@@ -129,4 +129,12 @@ stage('Integration Test') {
 	def getArtifactIdFromPom(pom) {
 	  def matcher = readFile(pom) =~ '<artifactId>(.+)</artifactId>'
 	  matcher ? matcher[0][1] : null
+}
+def notifySuccessful() {
+  emailext (
+      subject: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+      body: """<p>SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
+        <p>Check console output at "<a href="${env.BUILD_URL}">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a>"</p>""",
+      recipientProviders: [[$class: 'RequesterRecipientProvider']],to:'avijit_pattanaik@infosys.com'
+    )
 }
